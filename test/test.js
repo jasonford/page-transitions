@@ -1,15 +1,19 @@
-Structurl.defineRoot('/page-transitions');
+Structurl.defineRoot('/page-transitions/test/');
 
 Structurl.defineContexts({
-  '' : function (contextString, parentContext, parentElement) {
+  '.*' : function (parentContext, contextString, parentElement) {
     return (parentContext||'') + '/' + contextString;
   }
 });
 
 Structurl.defineElements({
-  '.*' : function (context) {
-    var element = document.createElement('span');
-    element.innerHTML = context;
+  '.*' : function (context, elementString) {
+    var element = document.createDocumentFragment();
+    var a = document.createElement('pre');
+    a.innerHTML = context;
+    a.style.marginTop = (context.length * 10) + 'px';
+    a.setAttribute('href', 'next!/');
+    element.appendChild(a);
     return element;
   }
 });

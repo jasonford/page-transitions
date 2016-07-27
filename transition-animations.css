@@ -4,4 +4,10 @@
   align-items: center;
   justify-content: center;
   opacity : 1;
+  pointer-events: none;
+}
+
+.transition-element-container > *
+{
+  pointer-events: all;
 }

@@ -6,25 +6,39 @@ Structurl = {};
     var states = [];
 
     window.addEventListener("tap", function (event) {
-      if (states.length < 2) return;
-
       var stateUpdate = './'
       var i = states.length - 1;
-      while (states[i] && !states[i].container.contains(event.target)) {
+      while (i > 0 && states[i] && !states[i].container.contains(event.target)) {
         i -= 1;
         stateUpdate += '../';
       }
-      //  TODO: prevent from backing up past the rootURL
       history.pushState(null, null, stateUpdate);
+      console.log(stateUpdate)
       applyState();      
+    });
+
+    window.addEventListener('click', function (e) {
+      var currentElement = event.target;
+      var href = null;
+      while (!href && currentElement && currentElement.getAttribute) {
+        href = currentElement.getAttribute('href');
+        currentElement = currentElement.parentNode;
+      }
+      if (href) {
+        e.preventDefault();
+        history.pushState(null, null, href);
+        applyState();
+      }
     });
 
     function applyState() {
       if (rootURL !== window.location.pathname.slice(0, rootURL.length)) {
-        throw new Error('provided root URL "'+ rootURL +' does not match the current root "' + window.location.pathname + '"');
+        //  heal the state
+        history.pushState(null, null, rootURL);
       }
       var pathname = window.location.pathname.slice(rootURL.length);
       var statesToRemove = states.concat([]);
+      if (pathname[0] != '/') pathname = '/' + pathname;
       var statesToAdd = pathname.replace(/\/$/g, '').split('/');
 
       //  shift out all states that will stay
@@ -37,8 +51,7 @@ Structurl = {};
 
       //  some states need to be removed
       statesToRemove.forEach(function (state) {
-        // TODO: transition out state
-        state.element.parentNode.remove(state.element);
+        document.body.removeChild(state.container);
       });
 
       //  update states
@@ -51,8 +64,8 @@ Structurl = {};
         var contextStateString = stateStrings[1] || '';
 
         var parentState = states[states.length-1] || {};
-        var context = getContext(contextStateString)(contextStateString, parentState.context, parentState.element);
-        var element = getElement(elementStateString)(elementStateString, context);
+        var context = getContext(contextStateString)(parentState.context, contextStateString, parentState.element);
+        var element = getElement(elementStateString)(context, elementStateString);
 
         var container = document.createElement('div');
         container.setAttribute('class', 'transition-element-container');
@@ -62,10 +75,6 @@ Structurl = {};
         container.style.width = "100%";
         container.style.height = "100%";
         container.appendChild(element);
-
-        //  no pointer events for container, but pointer events from element
-        container.style.pointerEvents = 'none';
-        element.style.pointerEvents = 'all';
 
         states.push({
           state : state,
@@ -78,27 +87,11 @@ Structurl = {};
       });
     }
 
-    //  whenever an element with a transition attribute was
-    //  tapped and the tap reaches the window
-    //  add the transition attribute to the history state
-    window.addEventListener('tap', function (event) {
-      var currentElement = event.target;
-      var transitionAttribute = null;
-      while (!transitionAttribute && currentElement && currentElement.getAttribute) {
-        transitionAttribute = currentElement.getAttribute('transition');
-        currentElement = currentElement.parentNode;
-      }
-
-      if (transitionAttribute) {
-        history.pushState(null, null, transitionAttribute);
-        applyState();
-      }
-    });
-
     applyState();
 
     window.onpopstate = function (event) {
       //  back or forward pressed
+      window.location.pathname.slice(0, rootURL.length);
       applyState();
     }
   });
@@ -117,7 +110,7 @@ Structurl = {};
 
   function getElement(pattern) {
     for (var p in Elements) {
-      if ((new RegExp('^'+p+'$')).test(pattern)) {
+      if ((new RegExp(p)).test(pattern)) {
         return Elements[p];
       }
     }
@@ -125,11 +118,11 @@ Structurl = {};
   }
   function getContext(pattern) {
     for (var p in Contexts) {
-      if ((new RegExp('\\+'+p+'$')).test(pattern)) {
+      if ((new RegExp(p)).test(pattern)) {
         return Contexts[p];
       }
     }
-    return Contexts[''] || defaultContext;
+    return defaultContext;
   }
 
 

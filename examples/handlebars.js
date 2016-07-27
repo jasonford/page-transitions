@@ -6,7 +6,7 @@
   var appRoot = {};
 
   Structurl.defineElements({
-    '.*' : function (elementString, context) {
+    '.*' : function (context, elementString) {
       //  use pre-compiled handlebars templates
       var element = document.createDocumentFragment();
       template = Handlebars.templates[elementString];
@@ -16,7 +16,7 @@
   });
 
   Structurl.defineContexts({
-    '.*'  : function (contextString, parentContext, parentElement) {
+    '.*'  : function (parentContext, contextString, parentElement) {
       if (parentContext) {
         return parentContext[contextString];
       }
