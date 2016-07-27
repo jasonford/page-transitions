@@ -1,0 +1,7 @@
+.transition-element-container
+{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity : 1;
+}
