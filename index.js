@@ -7,18 +7,23 @@ Structurl = {};
   window.addEventListener('load', function () {
     var states = [];
 
-    window.addEventListener("tap", function (event) {
+    window.addEventListener("click", function (event) {     
+    });
+
+    window.addEventListener('click', function (e) {
+      //  apply backward progress if element belonging to a previous state is clicked
       var stateUpdate = './'
       var i = states.length - 1;
       while (i > 0 && states[i] && !states[i].container.contains(event.target)) {
         i -= 1;
         stateUpdate += '../';
       }
-      history.pushState(null, null, stateUpdate);
-      applyState();      
-    });
+      if (i < states.length-1) {
+        history.pushState(null, null, stateUpdate);
+        applyState();
+      }
 
-    window.addEventListener('click', function (e) {
+      //  apply forward progress if element with href is clicked
       var currentElement = event.target;
       var href = null;
       while (!href && currentElement && currentElement.getAttribute) {
@@ -31,8 +36,15 @@ Structurl = {};
         applyState();
       }
     });
-
+    var lastPathname = null;
     function applyState() {
+      //  don't apply the same state twice
+      if (window.location.pathname == lastPathname) {
+        console.log('applying the same state twice...')
+        return; //  TODO: clean up prior code to get rid of this case
+      }
+      lastPathname = window.location.pathname;
+
       if (rootURL !== window.location.pathname.slice(0, rootURL.length)) {
         //  heal the state
         history.pushState(null, null, rootURL);
@@ -53,38 +65,33 @@ Structurl = {};
       //  some states need to be removed
       statesToRemove.forEach(function (state, index) {
         var exitAnimation = false;
-        if (index == statesToRemove.length-1) {
-          //  allow exit animation to apply to highest state (if animation is set up in css) then remove element
-          animationStartEvents.forEach(function (eventName) {
-            state.container.addEventListener(eventName, function () {
-              exitAnimation = true;
-            });
+        //  allow exit animation (if animation is set up in css) then remove element
+        animationStartEvents.forEach(function (eventName) {
+          state.container.addEventListener(eventName, function () {
+            exitAnimation = true;
           });
+        });
 
-          for (var i=0; i<state.container.children.length; i++) {
-            var child = state.container.children[i];
-            child.setAttribute("class", child.getAttribute("class") + " removing");
-          }
+        for (var i=0; i<state.container.children.length; i++) {
+          var child = state.container.children[i];
+          child.setAttribute("class", child.getAttribute("class") + " removing");
+        }
 
-          //  request 2 layers of animation frames to assess if animation started
+        //  request 2 layers of animation frames to assess if animation started
+        requestAnimationFrame(function () {
           requestAnimationFrame(function () {
-            requestAnimationFrame(function () {
-              if (exitAnimation) {
-                animationEndEvents.forEach(function (eventName) {
-                  state.container.addEventListener(eventName, function () {
-                    document.body.removeChild(state.container);
-                  });
+            if (exitAnimation) {
+              animationEndEvents.forEach(function (eventName) {
+                state.container.addEventListener(eventName, function () {
+                  document.body.removeChild(state.container);
                 });
-              }
-              else {
-                document.body.removeChild(state.container);
-              }
-            });
+              });
+            }
+            else {
+              document.body.removeChild(state.container);
+            }
           });
-        }
-        else {
-          document.body.removeChild(state.container);
-        }
+        });
       });
 
       //  update states

@@ -14,6 +14,7 @@
 
 .removing
 {
+  position : relative;
   transition: opacity .25s ease-in-out;
   -moz-transition: opacity .25s ease-in-out;
   -webkit-transition: opacity .25s ease-in-out;
@@ -23,6 +24,6 @@
 }
 
 @keyframes example {
-    from {opacity:1;}
-    to {opacity: 0;}
+    from {left:0;}
+    to {left:100%;}
 }
