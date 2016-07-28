@@ -2,6 +2,8 @@ Structurl = {};
 
 (function () {
   var rootURL = '';
+  var animationStartEvents = "animationstart MSAnimationStart webkitAnimationStart oAnimationStart".split(' ');
+  var animationEndEvents = "animationend MSAnimationEnd webkitAnimationEnd oAnimationEnd".split(' ');
   window.addEventListener('load', function () {
     var states = [];
 
@@ -13,7 +15,6 @@ Structurl = {};
         stateUpdate += '../';
       }
       history.pushState(null, null, stateUpdate);
-      console.log(stateUpdate)
       applyState();      
     });
 
@@ -50,22 +51,57 @@ Structurl = {};
       }
 
       //  some states need to be removed
-      statesToRemove.forEach(function (state) {
-        document.body.removeChild(state.container);
+      statesToRemove.forEach(function (state, index) {
+        var exitAnimation = false;
+        if (index == statesToRemove.length-1) {
+          //  allow exit animation to apply to highest state (if animation is set up in css) then remove element
+          animationStartEvents.forEach(function (eventName) {
+            state.container.addEventListener(eventName, function () {
+              exitAnimation = true;
+            });
+          });
+
+          for (var i=0; i<state.container.children.length; i++) {
+            var child = state.container.children[i];
+            child.setAttribute("class", child.getAttribute("class") + " removing");
+          }
+
+          //  request 2 layers of animation frames to assess if animation started
+          requestAnimationFrame(function () {
+            requestAnimationFrame(function () {
+              if (exitAnimation) {
+                animationEndEvents.forEach(function (eventName) {
+                  state.container.addEventListener(eventName, function () {
+                    document.body.removeChild(state.container);
+                  });
+                });
+              }
+              else {
+                document.body.removeChild(state.container);
+              }
+            });
+          });
+        }
+        else {
+          document.body.removeChild(state.container);
+        }
       });
 
       //  update states
       states = states.splice(0,i);
 
       statesToAdd.forEach(function (state) {
-        //  TODO: add element and context
+        //  add element and context
         var stateStrings = state.split('+', 1);
         var elementStateString = stateStrings[0];
         var contextStateString = stateStrings[1] || '';
 
         var parentState = states[states.length-1] || {};
-        var context = getContext(contextStateString)(parentState.context, contextStateString, parentState.element);
-        var element = getElement(elementStateString)(context, elementStateString);
+        var contextFn = getContext(contextStateString);
+        var elementFn = getElement(elementStateString);
+
+        var context = contextFn(parentState.context, contextStateString, parentState.element);
+        var element = elementFn(context, elementStateString);
 
         var container = document.createElement('div');
         container.setAttribute('class', 'transition-element-container');
@@ -101,6 +137,7 @@ Structurl = {};
     element.innerHTML = context;
     return element;
   }
+
   function defaultContext() {
     return {};
   }

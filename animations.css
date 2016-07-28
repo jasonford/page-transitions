@@ -1,0 +1,28 @@
+.transition-element-container
+{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity : 1;
+  pointer-events: none;
+}
+
+.transition-element-container > *
+{
+  pointer-events : all;
+}
+
+.removing
+{
+  transition: opacity .25s ease-in-out;
+  -moz-transition: opacity .25s ease-in-out;
+  -webkit-transition: opacity .25s ease-in-out;
+  animation-name: example;
+  animation-duration: 0.3s;
+  pointer-events : none;
+}
+
+@keyframes example {
+    from {opacity:1;}
+    to {opacity: 0;}
+}

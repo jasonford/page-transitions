@@ -11,7 +11,7 @@ Structurl.defineElements({
     var element = document.createDocumentFragment();
     var a = document.createElement('pre');
     a.innerHTML = context;
-    a.style.marginTop = (context.length * 10) + 'px';
+    a.style.marginTop = (context.length * 100) + 'px';
     a.setAttribute('href', 'next!/');
     element.appendChild(a);
     return element;
