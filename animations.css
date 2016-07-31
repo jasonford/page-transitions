@@ -5,6 +5,8 @@
   justify-content: center;
   opacity : 1;
   pointer-events: none;
+  animation-name: slideinright;
+  animation-duration: 1s;
 }
 
 .transition-element-container > *
@@ -15,15 +17,29 @@
 .removing
 {
   position : relative;
-  transition: opacity .25s ease-in-out;
-  -moz-transition: opacity .25s ease-in-out;
-  -webkit-transition: opacity .25s ease-in-out;
-  animation-name: example;
-  animation-duration: 0.3s;
+  animation-name: slideoutright;
+  animation-duration: 4s;
   pointer-events : none;
 }
 
-@keyframes example {
-    from {left:0;}
-    to {left:100%;}
+@keyframes slideoutright {
+    from {
+      left:0;
+      opacity:1;
+    }
+    to   {
+      left:100%;
+      opacity:0;
+    }
+}
+
+@keyframes slideinright {
+  from {
+    left:-100%;
+    opacity:0;
+  }
+  to   {
+    left: 0;
+    opacity: 1;
+  }
 }

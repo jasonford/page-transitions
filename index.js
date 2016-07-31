@@ -20,7 +20,6 @@ Structurl = {};
       }
       if (i < states.length-1) {
         history.pushState(null, null, stateUpdate);
-        applyState();
       }
 
       //  apply forward progress if element with href is clicked
@@ -33,8 +32,9 @@ Structurl = {};
       if (href) {
         e.preventDefault();
         history.pushState(null, null, href);
-        applyState();
       }
+
+      applyState();
     });
     var lastPathname = null;
     function applyState() {
